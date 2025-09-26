@@ -48,6 +48,15 @@ await fs_unlink('Documents', 'hello.txt', {
   }
 });
 ```
+
+Store and retrieve bits efficiently
+```js
+await storageSetBit('Documents', 'feature-flags', 3, true);
+const isEnabled = await storageGetBit('Documents', 'feature-flags', 3);
+
+// Reset a bitfield entirely
+await storageClearBits('Documents', 'feature-flags');
+```
 Notes
 
 Each directory is a separate `localForage` instance under the hood.
