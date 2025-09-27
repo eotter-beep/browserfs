@@ -1,6 +1,6 @@
-BrowserFS
+BRFS
 
-A lightweight Node-style filesystem for browsers using localForage and idb.
+Formerly known as BrowserFS, BRFS is a lightweight Node-style filesystem for browsers using localForage and idb. The new name avoids confusion with other projects that share the BrowserFS name.
 Simulate directories, read/write files, and delete them—all with familiar fs-style functions.
 
 Features
@@ -18,7 +18,7 @@ Installation
 Include via ES modules:
 ```html
 <script type="module">
-  import { os_mkdir, writeFile, readFile, fs_unlink } from './browserfs.js';
+  import { os_mkdir, writeFile, readFile, fs_unlink } from './brfs.js';
 </script>
 ```
 
@@ -33,12 +33,12 @@ const myDir = os_mkdir('Documents');
 ```
 Write a file
 ```js
-await writeFile('Documents', 'hello.txt', 'Hello BrowserFS!');
+await writeFile('Documents', 'hello.txt', 'Hello BRFS!');
 ```
 Read a file
 ```js
 const content = await readFile('Documents', 'hello.txt');
-console.log(content); // "Hello BrowserFS!"
+console.log(content); // "Hello BRFS!"
 ```
 Delete a file
 ```js
