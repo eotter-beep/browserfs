@@ -1,7 +1,7 @@
 import { openDB } from 'https://cdn.jsdelivr.net/npm/idb@8.0.3/+esm';
 import localforage from 'https://cdn.jsdelivr.net/npm/localforage@1.10.0/+esm';
 
-const BIT_DB_NAME = 'browserfs-bit-storage';
+const BIT_DB_NAME = 'brfs-bit-storage';
 const BIT_STORE_NAME = 'bitfields';
 
 const bitDBPromise = openDB(BIT_DB_NAME, 1, {
