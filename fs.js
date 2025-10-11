@@ -39,6 +39,28 @@ function toUint8Array(payload) {
   return null;
 }
 
+function prepareBitfield(stored, minBits = 0) {
+  let bitfield;
+  if (!stored) {
+    bitfield = new Uint8Array(Math.ceil(minBits / 8));
+  } else {
+    bitfield = toUint8Array(stored);
+  }
+
+  if (!bitfield) {
+    throw new TypeError('Stored bitfield is not a supported binary type');
+  }
+
+  const requiredBytes = Math.ceil(minBits / 8);
+  if (requiredBytes > bitfield.length) {
+    const expanded = new Uint8Array(requiredBytes);
+    expanded.set(bitfield);
+    bitfield = expanded;
+  }
+
+  return bitfield;
+}
+
 // Track "directories" as localForage instances
 const directories = {};
 
@@ -82,30 +104,7 @@ async function fs_unlink(dir, fileName, { blocked } = {}) {
 async function getBitfield(key, minBits = 0) {
   const db = await bitDBPromise;
   const stored = await db.get(BIT_STORE_NAME, key);
-  let bitfield;
-  if (!stored) {
-    bitfield = new Uint8Array(Math.ceil(minBits / 8));
-  } else {
-    bitfield = toUint8Array(stored);
-  }
-
-  if (!bitfield) {
-    throw new TypeError('Stored bitfield is not a supported binary type');
-  }
-
-  const requiredBytes = Math.ceil(minBits / 8);
-  if (requiredBytes > bitfield.length) {
-    const expanded = new Uint8Array(requiredBytes);
-    expanded.set(bitfield);
-    bitfield = expanded;
-  }
-
-  return bitfield;
-}
-
-async function persistBitfield(key, bitfield) {
-  const db = await bitDBPromise;
-  await db.put(BIT_STORE_NAME, bitfield, key);
+  return prepareBitfield(stored, minBits);
 }
 
 async function storageSetBit(dir, fileName, bitIndex, value) {
@@ -113,7 +112,11 @@ async function storageSetBit(dir, fileName, bitIndex, value) {
   const bitValue = normaliseBitValue(value);
   const key = makeBitKey(dir, fileName);
   const totalBits = bitIndex + 1;
-  const bitfield = await getBitfield(key, totalBits);
+  const db = await bitDBPromise;
+  const tx = db.transaction(BIT_STORE_NAME, 'readwrite');
+  const store = tx.store;
+  const stored = await store.get(key);
+  const bitfield = prepareBitfield(stored, totalBits);
 
   const byteIndex = Math.floor(bitIndex / 8);
   const mask = 1 << (bitIndex % 8);
@@ -124,7 +127,8 @@ async function storageSetBit(dir, fileName, bitIndex, value) {
     bitfield[byteIndex] &= ~mask;
   }
 
-  await persistBitfield(key, bitfield);
+  await store.put(bitfield, key);
+  await tx.done;
   return bitValue;
 }
 
